@@ -3,7 +3,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 # Load env files if they exist
 load_dotenv()
@@ -18,8 +18,7 @@ class Settings(BaseModel):
     default_provider: str = Field(default_factory=lambda: os.getenv("VIDEO_MCP_DEFAULT_PROVIDER", "kling"))
     log_level: str = Field(default_factory=lambda: os.getenv("VIDEO_MCP_LOG_LEVEL", "INFO"))
 
-    class Config:
-        arbitrary_types_allowed = True
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 @lru_cache
 def get_settings() -> Settings:
