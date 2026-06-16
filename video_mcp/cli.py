@@ -8,9 +8,24 @@ from video_mcp.config import get_settings
 from video_mcp.errors import MCPVideoError
 
 
+def _safe_echo(message: str, err: bool = False) -> None:
+    """Echo a message with emoji, fallback to standard ASCII characters if encoding fails."""
+    try:
+        message.encode(sys.stdout.encoding or "ascii")
+        click.echo(message, err=err)
+    except UnicodeEncodeError:
+        # Simple replacements of common emojis used in CLI
+        ascii_msg = (
+            message.replace("✅", "[PASS]")
+            .replace("❌", "[FAIL]")
+            .replace("🎉", "[SUCCESS]")
+            .replace("⚠️", "[WARN]")
+        )
+        click.echo(ascii_msg, err=err)
+
 def _print_status(label: str, passed: bool, info: str = "") -> None:
     symbol = "✅" if passed else "❌"
-    click.echo(f"{symbol} {label}: {info}")
+    _safe_echo(f"{symbol} {label}: {info}")
 
 @click.group()
 def main() -> None:
@@ -62,9 +77,10 @@ def doctor() -> None:
 
     # Critical failures check
     if not (py_pass and ffmpeg_pass and write_pass):
-        click.echo("\n❌ Diagnostics failed. Please resolve the critical errors above.", err=True)
+        _safe_echo("\n❌ Diagnostics failed. Please resolve the critical errors above.", err=True)
         sys.exit(1)
-    click.echo("\n🎉 Diagnostics passed! video-mcp is ready for production.")
+        
+    _safe_echo("\n🎉 Diagnostics passed! video-mcp is ready for production.")
 
 @main.command()
 @click.option("--image", required=True, help="Path to input image file.")
@@ -90,11 +106,11 @@ def generate(image: str, prompt: str, duration: int, provider: str, output: str 
                 shutil.copy(res.output_path, output)
                 res.output_path = output
             bar.update(100)
-        click.echo("✅ Video created successfully!")
+        _safe_echo("✅ Video created successfully!")
         click.echo(f"Output Path: {res.output_path}")
         click.echo(f"Duration: {res.duration_seconds}s | Size: {res.file_size_mb}MB")
     except MCPVideoError as e:
-        click.echo(f"❌ Generation error: {e}", err=True)
+        _safe_echo(f"❌ Generation error: {e}", err=True)
         sys.exit(1)
 
 @main.command()
@@ -107,11 +123,11 @@ def voiceover(script: str, voice: str, output: str | None) -> None:
     click.echo(f"Synthesizing voiceover with voice '{voice}'...")
     try:
         res = client.generate_voiceover(script=script, voice_id=voice, output_path=output)
-        click.echo("✅ Voiceover created successfully!")
+        _safe_echo("✅ Voiceover created successfully!")
         click.echo(f"Output Path: {res.output_path}")
         click.echo(f"Duration: {res.duration_seconds:.2f}s | Chars: {res.character_count}")
     except MCPVideoError as e:
-        click.echo(f"❌ Voiceover error: {e}", err=True)
+        _safe_echo(f"❌ Voiceover error: {e}", err=True)
         sys.exit(1)
 
 @main.command()
@@ -132,7 +148,7 @@ def reel(script: str, style: str, platform: str, character: str | None, output: 
             character_name=character,
             output_path=output,
         )
-        click.echo("\n🎉 Video Reel compiled successfully!")
+        _safe_echo("\n🎉 Video Reel compiled successfully!")
         click.echo(f"Final Output: {res.output_path}")
         click.echo(f"Reel Duration: {res.total_duration:.1f}s | Scenes: {res.scene_count}")
         click.echo("Cost Breakdown:")
@@ -141,7 +157,7 @@ def reel(script: str, style: str, platform: str, character: str | None, output: 
         if res.storyboard_path:
             click.echo(f"Storyboard Thumbnail: {res.storyboard_path}")
     except MCPVideoError as e:
-        click.echo(f"❌ Orchestration error: {e}", err=True)
+        _safe_echo(f"❌ Orchestration error: {e}", err=True)
         sys.exit(1)
 
 @main.command()
@@ -158,15 +174,15 @@ def info(path: str) -> None:
         if res.issues:
             click.echo("Issues Found:")
             for issue in res.issues:
-                click.echo(f" - ⚠️ {issue}")
+                _safe_echo(f" - ⚠️ {issue}")
         else:
-            click.echo(" - ✅ No quality issues found!")
+            _safe_echo(" - ✅ No quality issues found!")
         if res.thumbnails:
             click.echo("Keyframe Thumbnails:")
             for thumb in res.thumbnails:
                 click.echo(f" - {thumb}")
     except MCPVideoError as e:
-        click.echo(f"❌ Analysis error: {e}", err=True)
+        _safe_echo(f"❌ Analysis error: {e}", err=True)
         sys.exit(1)
 
 @main.command()

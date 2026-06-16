@@ -9,6 +9,7 @@ from video_mcp.models.results import VideoResult, AudioResult
 @pytest.fixture(autouse=True)
 def settings_override(tmp_path, monkeypatch):
     """Overrides workspace directory to a temporary pytest path and configures default settings."""
+    get_settings.cache_clear()
     work_dir = tmp_path / "work_dir"
     work_dir.mkdir(parents=True, exist_ok=True)
     
@@ -81,17 +82,24 @@ def sample_audio():
 def mock_kling_provider(monkeypatch):
     """Mocks KlingProvider video generator methods where they are imported."""
     mock = MagicMock()
-    # Mock async method generate_video
-    mock.generate_video = AsyncMock(return_value=VideoResult(
-        output_path="mock_output.mp4",
-        duration_seconds=5.0,
-        width=1080,
-        height=1920,
-        fps=30,
-        file_size_mb=1.2,
-        provider_used="kling",
-        cost_credits=10.0,
-    ))
+    
+    # Mock async method generate_video to create a physical file on disk
+    async def mock_generate_video(req):
+        settings = get_settings()
+        out = settings.work_dir / "mock_output.mp4"
+        out.write_bytes(b"mock video data")
+        return VideoResult(
+            output_path=str(out),
+            duration_seconds=req.duration,
+            width=1080,
+            height=1920,
+            fps=30,
+            file_size_mb=1.2,
+            provider_used=req.provider,
+            cost_credits=10.0,
+        )
+
+    mock.generate_video = AsyncMock(side_effect=mock_generate_video)
     # Mock where imported in generate.py
     monkeypatch.setattr("video_mcp.tools.generate.KlingProvider", lambda *a, **kw: mock)
     monkeypatch.setattr("video_mcp.providers.kling.KlingProvider", lambda *a, **kw: mock)
@@ -102,17 +110,21 @@ def mock_elevenlabs_provider(monkeypatch):
     """Mocks ElevenLabs TTS generator methods where they are imported."""
     mock = MagicMock()
     
-    # Mock async generate_voiceover dynamically to match input script length
+    # Mock async generate_voiceover dynamically to match input script length and create physical file
     async def mock_generate_voiceover(script, voice_id="adam", speed=0.95, output_path=None):
+        settings = get_settings()
+        out_path = Path(output_path) if output_path else settings.work_dir / "mock_voiceover.mp3"
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_bytes(b"mock audio data")
         return AudioResult(
-            output_path=output_path or "mock_voiceover.mp3",
+            output_path=str(out_path),
             duration_seconds=3.5,
             voice_id=voice_id,
             character_count=len(script),
             cost_credits=float(len(script)),
         )
 
-    mock.generate_voiceover = mock_generate_voiceover
+    mock.generate_voiceover = AsyncMock(side_effect=mock_generate_voiceover)
     # Mock where imported in generate.py and audio.py
     monkeypatch.setattr("video_mcp.tools.generate.ElevenLabsProvider", lambda *a, **kw: mock)
     monkeypatch.setattr("video_mcp.providers.elevenlabs.ElevenLabsProvider", lambda *a, **kw: mock)

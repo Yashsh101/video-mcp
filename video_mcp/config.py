@@ -17,6 +17,8 @@ class Settings(BaseModel):
     max_file_size_mb: int = Field(default_factory=lambda: int(os.getenv("VIDEO_MCP_MAX_FILE_SIZE_MB", "500")))
     default_provider: str = Field(default_factory=lambda: os.getenv("VIDEO_MCP_DEFAULT_PROVIDER", "kling"))
     log_level: str = Field(default_factory=lambda: os.getenv("VIDEO_MCP_LOG_LEVEL", "INFO"))
+    enable_cache: bool = Field(default_factory=lambda: os.getenv("VIDEO_MCP_ENABLE_CACHE", "true").lower() in ("true", "1", "yes"))
+    cache_dir: Path | None = Field(default_factory=lambda: Path(os.getenv("VIDEO_MCP_CACHE_DIR")) if os.getenv("VIDEO_MCP_CACHE_DIR") else None)
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

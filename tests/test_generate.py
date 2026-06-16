@@ -19,7 +19,7 @@ async def test_generate_video_from_image_success(sample_image, mock_kling_provid
         duration=5,
         provider="kling",
     )
-    assert res.output_path == "mock_output.mp4"
+    assert res.output_path.endswith("mock_output.mp4")
     assert res.duration_seconds == 5.0
 
 @pytest.mark.asyncio
@@ -81,5 +81,5 @@ async def test_generate_voiceover(mock_elevenlabs_provider):
         script="Bob was starting an internship.",
         voice_id="adam",
     )
-    assert res.output_path == "mock_voiceover.mp3"
+    assert res.output_path.endswith("mock_voiceover.mp3")
     assert res.character_count == 31

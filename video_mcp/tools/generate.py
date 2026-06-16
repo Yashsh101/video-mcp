@@ -76,6 +76,34 @@ async def generate_video_from_image(
         duration=duration,
     )
 
+    # Check cache
+    from video_mcp.cache import get_cached_video, cache_video
+    import shutil
+
+    cached_res, cached_file = get_cached_video(
+        image_path=str(validated_img),
+        motion_prompt=clean_prompt,
+        duration=duration,
+        aspect_ratio=aspect_ratio,
+        provider=provider,
+        model=model,
+        audio_prompt=audio_prompt,
+    )
+    if cached_res and cached_file and cached_file.exists():
+        target_path = validate_output_path(None, ".mp4")
+        shutil.copy(cached_file, target_path)
+        cached_res.output_path = str(target_path)
+        
+        duration_ms = (time.monotonic() - start_time) * 1000
+        logger.info(
+            "tool_success",
+            tool_name="generate_video_from_image",
+            duration_ms=duration_ms,
+            output_path=cached_res.output_path,
+            cached=True,
+        )
+        return cached_res
+
     req = GenerationRequest(
         image_path=str(validated_img),
         motion_prompt=clean_prompt,
@@ -88,6 +116,18 @@ async def generate_video_from_image(
 
     prov_client = _get_provider(provider)
     result = cast(VideoResult, await prov_client.generate_video(req))
+
+    # Save to cache
+    cache_video(
+        image_path=str(validated_img),
+        motion_prompt=clean_prompt,
+        duration=duration,
+        aspect_ratio=aspect_ratio,
+        provider=provider,
+        model=model,
+        audio_prompt=audio_prompt,
+        result=result,
+    )
 
     duration_ms = (time.monotonic() - start_time) * 1000
     logger.info(
@@ -131,6 +171,35 @@ async def generate_video_from_text(
         prompt=clean_prompt,
     )
 
+    # Check cache
+    from video_mcp.cache import get_cached_video, cache_video
+    import shutil
+
+    cached_res, cached_file = get_cached_video(
+        image_path=None,
+        motion_prompt=clean_prompt,
+        duration=duration,
+        aspect_ratio=aspect_ratio,
+        provider=provider,
+        model=style,
+        audio_prompt=None,
+    )
+    if cached_res and cached_file and cached_file.exists():
+        from video_mcp.guardrails import validate_output_path
+        target_path = validate_output_path(None, ".mp4")
+        shutil.copy(cached_file, target_path)
+        cached_res.output_path = str(target_path)
+        
+        duration_ms = (time.monotonic() - start_time) * 1000
+        logger.info(
+            "tool_success",
+            tool_name="generate_video_from_text",
+            duration_ms=duration_ms,
+            output_path=cached_res.output_path,
+            cached=True,
+        )
+        return cached_res
+
     prov_client = _get_provider(provider)
     # Kling supports text to video directly
     if not hasattr(prov_client, "submit_text_to_video"):
@@ -170,6 +239,18 @@ async def generate_video_from_text(
         file_size_mb=round(output_path.stat().st_size / (1024 * 1024), 2),
         provider_used=provider,
         cost_credits=10.0 if duration <= 5 else 20.0,
+    )
+
+    # Save to cache
+    cache_video(
+        image_path=None,
+        motion_prompt=clean_prompt,
+        duration=duration,
+        aspect_ratio=aspect_ratio,
+        provider=provider,
+        model=style,
+        audio_prompt=None,
+        result=result,
     )
 
     duration_ms = (time.monotonic() - start_time) * 1000
@@ -268,6 +349,19 @@ async def generate_voiceover(
         AudioResult with path, duration, character count, and credit usage.
     """
     logger.info("tool_call", tool_name="generate_voiceover", char_count=len(script))
+
+    # Check cache
+    from video_mcp.cache import get_cached_voiceover, cache_voiceover
+    import shutil
+
+    cached_res, cached_file = get_cached_voiceover(script=script, voice_id=voice_id, speed=speed)
+    if cached_res and cached_file and cached_file.exists():
+        from video_mcp.guardrails import validate_output_path
+        target_path = validate_output_path(output_path, ".mp3")
+        shutil.copy(cached_file, target_path)
+        cached_res.output_path = str(target_path)
+        return cached_res
+
     client = ElevenLabsProvider()
     result = await client.generate_voiceover(
         script=script,
@@ -275,6 +369,9 @@ async def generate_voiceover(
         speed=speed,
         output_path=output_path,
     )
+
+    # Save to cache
+    cache_voiceover(script=script, voice_id=voice_id, speed=speed, result=result)
     return result
 
 async def check_generation_job(job_id: str) -> JobStatus:
