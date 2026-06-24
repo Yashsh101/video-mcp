@@ -2,6 +2,8 @@ from typing import Any
 
 import structlog
 from fastmcp import FastMCP
+from starlette.requests import Request
+from starlette.responses import JSONResponse
 
 from video_mcp.config import get_settings
 from video_mcp.models.results import (
@@ -23,6 +25,10 @@ mcp = FastMCP(
     version="0.1.0",
     description="AI-native video generation MCP server integrating Kling, Veo, and ElevenLabs.",
 )
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request: Request) -> JSONResponse:
+    return JSONResponse({"status": "ok", "server": "video-mcp", "version": "0.1.0"})
 
 # Startup hook
 @mcp.resource("video_mcp://help")
@@ -301,9 +307,14 @@ async def search_tools(query: str) -> dict[str, Any]:
     return await _impl(query=query)
 
 def main() -> None:
+    import os
     settings = get_settings()
     logger.info("mcp_server_starting", work_dir=str(settings.work_dir))
-    mcp.run()
+    mcp.run(
+        transport="streamable-http",
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 8000)),
+    )
 
 if __name__ == "__main__":
     main()
