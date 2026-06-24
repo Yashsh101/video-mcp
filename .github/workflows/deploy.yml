@@ -2,6 +2,8 @@ name: Deploy to Render
 on:
   push:
     branches: [main]
+permissions:
+  contents: read
 jobs:
   deploy:
     runs-on: ubuntu-latest
