@@ -24,6 +24,12 @@ mcp = FastMCP(
     description="AI-native video generation MCP server integrating Kling, Veo, and ElevenLabs.",
 )
 
+
+@mcp.custom_route("/health", methods=["GET"])
+async def health_check(request) -> dict:
+    return {"status": "ok", "server": "video-mcp", "version": "0.1.0"}
+
+
 # Startup hook
 @mcp.resource("video_mcp://help")
 def get_help() -> str:
