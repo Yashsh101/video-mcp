@@ -1,0 +1,48 @@
+# Render.com deployment configuration
+# Docs: https://render.com/docs/render-yaml-spec
+
+services:
+  - type: web
+    name: video-mcp
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    branch: main
+    autoDeploy: true
+
+    healthCheckPath: /health
+
+    envVars:
+      # Transport & Server
+      - key: PORT
+        value: "8000"
+      - key: VIDEO_MCP_WORK_DIR
+        value: /tmp/video-mcp
+      - key: VIDEO_MCP_DEFAULT_PROVIDER
+        value: kling
+      - key: VIDEO_MCP_LOG_LEVEL
+        value: INFO
+      - key: VIDEO_MCP_MAX_FILE_SIZE_MB
+        value: "500"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+
+      # API Keys — add manually in Render dashboard
+      - key: KLING_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: HAILUO_API_KEY
+        sync: false
+      - key: VEO_API_KEY
+        sync: false
+
+    # Disk for generated video output
+    disk:
+      name: video-output
+      mountPath: /tmp/video-mcp
+      sizeGB: 1
