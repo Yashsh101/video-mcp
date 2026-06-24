@@ -301,9 +301,14 @@ async def search_tools(query: str) -> dict[str, Any]:
     return await _impl(query=query)
 
 def main() -> None:
+    import os
     settings = get_settings()
     logger.info("mcp_server_starting", work_dir=str(settings.work_dir))
-    mcp.run()
+    mcp.run(
+        transport="streamable-http",
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 8000)),
+    )
 
 if __name__ == "__main__":
     main()

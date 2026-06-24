@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: video-mcp
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: KLING_API_KEY
+        sync: false
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: HAILUO_API_KEY
+        sync: false
+      - key: VEO_API_KEY
+        sync: false
+      - key: WORK_DIR
+        value: /app/output
