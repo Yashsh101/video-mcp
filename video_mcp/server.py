@@ -30,7 +30,7 @@ async def health_check(request: Request) -> JSONResponse:
     return JSONResponse({"status": "ok", "server": "video-mcp", "version": "0.1.0"})
 
 # Startup hook
-@mcp.resource("help://help")
+@mcp.resource("video-mcp://help")
 def get_help() -> str:
     """Returns documentation and quick-start tips."""
     return (
@@ -38,7 +38,7 @@ def get_help() -> str:
         "To get started, try calling create_reel_from_brief with a narrative script."
     )
 
-@mcp.resource("video_mcp://providers")
+@mcp.resource("video-mcp://providers")
 def get_providers() -> str:
     """Returns configured video and audio providers status."""
     settings = get_settings()
@@ -48,7 +48,7 @@ def get_providers() -> str:
     veo = "Configured" if settings.veo_api_key else "Missing"
     return f"Kling: {kling}\nElevenLabs: {el}\nHailuo: {hailuo}\nVeo: {veo}"
 
-@mcp.resource("video_mcp://credits")
+@mcp.resource("video-mcp://credits")
 def get_credits() -> str:
     """Returns estimated credits statement."""
     return "Check provider balances by initializing provider wrappers."
