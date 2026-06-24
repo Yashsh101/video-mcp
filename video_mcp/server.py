@@ -23,7 +23,6 @@ logger = structlog.get_logger()
 mcp = FastMCP(
     "video-mcp",
     version="0.1.0",
-    description="AI-native video generation MCP server integrating Kling, Veo, and ElevenLabs.",
 )
 
 @mcp.custom_route("/health", methods=["GET"])
