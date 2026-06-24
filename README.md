@@ -11,6 +11,16 @@ Unlike traditional video editing servers that only wrap local FFmpeg operations,
 
 ---
 
+## 🚀 Live Demo
+
+[![Live on Render](https://img.shields.io/badge/Live%20Demo-Render-46E3B7?logo=render&logoColor=white)](https://video-mcp-9c74.onrender.com)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Yashsh101/video-mcp)
+
+- Live URL: https://video-mcp-9c74.onrender.com
+- Health endpoint: https://video-mcp-9c74.onrender.com/health
+
+---
+
 ## 📖 Table of Contents
 1. [🚀 Quick Activation (Claude Desktop)](#-quick-activation-claude-desktop)
 2. [📦 Installation](#-installation)
