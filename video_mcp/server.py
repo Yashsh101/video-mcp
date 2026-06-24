@@ -30,7 +30,7 @@ async def health_check(request: Request) -> JSONResponse:
     return JSONResponse({"status": "ok", "server": "video-mcp", "version": "0.1.0"})
 
 # Startup hook
-@mcp.resource("video_mcp://help")
+@mcp.resource("help://help")
 def get_help() -> str:
     """Returns documentation and quick-start tips."""
     return (
