@@ -3,8 +3,7 @@ WORKDIR /app
 RUN pip install uv
 RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
 COPY pyproject.toml uv.lock ./
-RUN uv sync --no-dev
-
+RUN uv export --no-dev > /tmp/requirements.txt && pip install --no-cache-dir -r /tmp/requirements.txt
 FROM python:3.12-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
