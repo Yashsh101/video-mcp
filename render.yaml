@@ -24,14 +24,16 @@ services:
         value: kling
       - key: VIDEO_MCP_LOG_LEVEL
         value: INFO
+      - key: VIDEO_MCP_ENABLE_CACHE
+        value: "true"
       - key: VIDEO_MCP_MAX_FILE_SIZE_MB
-        value: "500"
-      - key: PYTHONDONTWRITEBYTECODE
-        value: "1"
-      - key: PYTHONUNBUFFERED
-        value: "1"
+        value: "100"
 
-      # API Keys — add manually in Render dashboard
+      # Auth (optional — leave blank to disable)
+      - key: VIDEO_MCP_API_KEY
+        sync: false
+
+      # Provider API Keys (add manually in Render dashboard)
       - key: KLING_API_KEY
         sync: false
       - key: ELEVENLABS_API_KEY
@@ -40,9 +42,3 @@ services:
         sync: false
       - key: VEO_API_KEY
         sync: false
-
-    # Disk for generated video output
-    disk:
-      name: video-output
-      mountPath: /tmp/video-mcp
-      sizeGB: 1
