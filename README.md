@@ -1,4 +1,4 @@
-# 🎥 Video MCP: The Production-Grade AI Video Generation MCP Server
+# 🎥 Video MCP: AI Video Generation MCP Server
 
 [![CI Status](https://github.com/Yashsh101/video-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Yashsh101/video-mcp/actions)
 [![PyPI version](https://badge.fury.io/py/video-mcp.svg)](https://badge.fury.io/py/video-mcp)

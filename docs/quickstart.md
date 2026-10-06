@@ -53,7 +53,7 @@ Execute the built-in diagnostic utility to ensure your pathing, FFmpeg binaries,
 video-mcp doctor
 ```
 
-If the checks pass successfully, your system is ready to host the Video MCP Server!
+If the checks pass successfully, the local prerequisites for running the Video MCP Server are available.
 
 ---
 
